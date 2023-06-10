@@ -6,13 +6,46 @@ import random
 wn = turtle.Screen()
 wn.bgcolor("grey")
 wn.title("Space Shooter")
+wn.setup(600,600)
+
+# Map
+map = turtle.Turtle()
+map.penup()
+map.hideturtle()
+map.pensize(30)
+map.color("lightcoral")
+top_left = (-300, 270)
+map.speed(0)
+
+# Vẽ Map
+def Map_draw():
+    map.goto(top_left)
+    map.pendown()
+    for _ in range(4):
+        map.forward(600)
+        map.rt(90)
+    map.penup()
+    map.goto(top_left)
+    map.color("white")
+    map.sety(map.ycor() - 100)
+    map.pendown()
+    for _ in range(5):
+        map.forward(600)
+        map.penup()
+        map.setx(-300)
+        map.sety(map.ycor() - 100)
+        map.pendown()
+
+Map_draw()
 
 # Đăng ký ảnh asset
-turtle.register_shape('ship_p.gif')
+turtle.register_shape('player.gif')
 turtle.register_shape('ship_e.gif')
+turtle.register_shape('bullet.gif')
+turtle.register_shape('explo.gif')
 
 # Vẽ người chơi
-player = turtle.Turtle(shape='ship_p.gif')
+player = turtle.Turtle(shape='player.gif')
 player.color("blue")
 player.penup()
 player.speed(0)
@@ -21,6 +54,12 @@ player.setheading(90)
 player.shapesize(30)
 
 playerspeed = 15
+
+# Tạo ra vụ nổ
+explo = turtle.Turtle("explo.gif")
+explo.hideturtle()
+explo.penup()
+explo.speed(0)
 
 # Di chuyển người chơi sang trái
 def move_left():
@@ -53,10 +92,13 @@ def fire_bullet():
     bulletstate = "fire"
     x = player.xcor()
     y = player.ycor() + 15
+    explo.goto(x, y + 15)
+    explo.stamp()
     for bullet in bullet_pool:
         if not bullet.isvisible():
             bullet.setposition(x, y)
             bullet.showturtle()
+            explo.clear()
             break
 
 # Tạo ra đạn
@@ -66,7 +108,7 @@ bulletspeed = 30
 for _ in range(bullet_count):
     bullet = turtle.Turtle()
     bullet.color("yellow")
-    bullet.shape("triangle")
+    bullet.shape("bullet.gif")
     bullet.penup()
     bullet.speed(0)
     bullet.setheading(90)
@@ -133,6 +175,8 @@ while True:
         # Kiểm tra xem đạn đã va chạm với kẻ thù hay chưa
         for bullet in bullet_pool:
             if bullet.isvisible() and is_collision(bullet, enemy):
+                explo.goto(enemy.xcor(), enemy.ycor())
+                explo.stamp()
                 bullet.hideturtle()
                 bulletstate = "ready"
                 bullet.setposition(0, -400)
@@ -141,7 +185,7 @@ while True:
                 score_string = "Score: %s" % score
                 score_pen.clear()
                 score_pen.write(score_string, False, align="left", font=("Arial", 14, "normal"))
-
+                explo.clear()
     # Di chuyển đạn
     for bullet in bullet_pool:
         if bullet.isvisible():
